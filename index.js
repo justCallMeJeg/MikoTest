@@ -15,13 +15,23 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 Object.defineProperty(exports, "__esModule", { value: true });
 const crypto = __importStar(require("crypto"));
 // -------------------- Voter Registry --------------------
@@ -139,6 +149,24 @@ class Chain {
         this.chain.push(block);
         console.log(`Block added: ${block.hash}`);
     }
+    tallyVotes() {
+        const tally = {};
+        // Skip genesis block
+        for (let i = 1; i < this.chain.length; i++) {
+            const candidate = this.chain[i].vote.candidate;
+            tally[candidate] = (tally[candidate] || 0) + 1;
+        }
+        return tally;
+    }
+    displayResults() {
+        const tally = this.tallyVotes();
+        console.log('\nElection Results:');
+        console.log('-----------------');
+        for (const [candidate, votes] of Object.entries(tally)) {
+            console.log(`${candidate}: ${votes} vote${votes !== 1 ? 's' : ''}`);
+        }
+        console.log('-----------------');
+    }
 }
 Chain.instance = new Chain();
 // -------------------- Wallet --------------------
@@ -199,4 +227,16 @@ const duplicateBlock = new Block(Chain.instance.lastBlock.hash, aliceDuplicateVo
 duplicateBlock.addValidatorSignature(validator1.publicKey, validator1.privateKey);
 duplicateBlock.addValidatorSignature(validator2.publicKey, validator2.privateKey);
 Chain.instance.addBlock(duplicateBlock); // Should be rejected
-console.log('Final chain:', Chain.instance.chain);
+// After adding blocks
+console.log('\nFinal Chain:');
+Chain.instance.displayResults();
+// Add more votes to test tally
+const charlie = new Wallet();
+voterRegistry.registerVoter(charlie.publicKey);
+const charlieVote = charlie.createVote('Candidate A');
+const block3 = new Block(Chain.instance.lastBlock.hash, charlieVote);
+block3.addValidatorSignature(validator1.publicKey, validator1.privateKey);
+block3.addValidatorSignature(validator3.publicKey, validator3.privateKey);
+Chain.instance.addBlock(block3);
+console.log('\nAfter Additional Vote:');
+Chain.instance.displayResults();
