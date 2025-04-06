@@ -1,12 +1,14 @@
+// -------------------- Vote.ts --------------------
 import * as crypto from 'crypto';
 
-// -------------------- Vote --------------------
 export default class Vote {
   public signature: Buffer | undefined;
 
   constructor(
     public readonly voterPublicKey: string,
     public readonly candidate: string,
+    public readonly position: string,  // Added position
+    public readonly department: string, // Added department
     public readonly timestamp: number = Date.now()
   ) {}
 
@@ -14,6 +16,8 @@ export default class Vote {
     return JSON.stringify({
       voterPublicKey: this.voterPublicKey,
       candidate: this.candidate,
+      position: this.position,
+      department: this.department,
       timestamp: this.timestamp
     });
   }

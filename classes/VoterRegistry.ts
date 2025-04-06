@@ -1,7 +1,15 @@
-// -------------------- Voter Registry --------------------
+// -------------------- VoterRegistry.ts --------------------
+export class Voter {
+  constructor(
+    public publicKey: string,
+    public department: string,
+    public kycVerified: boolean = false
+  ) {}
+}
+
 export default class VoterRegistry {
   private static instance: VoterRegistry;
-  private allowedVoters: Set<string> = new Set();
+  private voters: Map<string, Voter> = new Map();
 
   private constructor() {}
 
@@ -12,11 +20,16 @@ export default class VoterRegistry {
     return VoterRegistry.instance;
   }
 
-  registerVoter(publicKey: string): void {
-    this.allowedVoters.add(publicKey);
+  registerVoter(voter: Voter): void {
+    this.voters.set(voter.publicKey, voter);
   }
 
   isVoterValid(publicKey: string): boolean {
-    return this.allowedVoters.has(publicKey);
+    const voter = this.voters.get(publicKey);
+    return !!voter && voter.kycVerified;
+  }
+
+  getVoterDepartment(publicKey: string): string | null {
+    return this.voters.get(publicKey)?.department || null;
   }
 }

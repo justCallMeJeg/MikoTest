@@ -16,8 +16,8 @@ export default class Wallet {
     this.privateKey = keypair.privateKey;
   }
 
-  createVote(candidate: string): Vote {
-    const vote = new Vote(this.publicKey, candidate);
+  createVote(candidate: string, position: string, department: string): Vote {
+    const vote = new Vote(this.publicKey, candidate, position, department);
     vote.sign(this.privateKey);
     return vote;
   }
